@@ -1,19 +1,12 @@
 /*
- * Read a temperature sensor and light sensor and transmit that data via ZigBee
- * to another unit with an LCD screen
+ * MNSL timer project
  */
 
 #include <LiquidCrystal.h>
 
+// 1 Analog Pin to read the keypad
+int keypad_in_pin = 0;
 
-// Analog Pin
-int keypad_in = 0;
-
-/*
-int ledPin = 13;
-int temp_pin = 1;
-float g_temp_C = 0;
-*/
 
 // rs (LCD pin 4) to Arduino pin 12
 // rw (LCD pin 5) to Arduino pin 11
@@ -22,21 +15,23 @@ float g_temp_C = 0;
 // LCD pins d4, d5, d6, d7 to Arduino pins 5, 4, 3, 2
 LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
 
-int backLight = 13;
+int lcd_back_light_pin = 13;
+
 
 void setup()
 {
 	// Open serial communications and wait for port to open:
 	Serial.begin(9600);
 
-	pinMode(backLight, OUTPUT);
-	digitalWrite(backLight, HIGH);
+	pinMode(lcd_back_light_pin, OUTPUT);
+	digitalWrite(lcd_back_light_pin, HIGH);
 	lcd.begin(16,2);
 	lcd.clear();
 	lcd.setCursor(0,0);
 	lcd.print("Welcome MSNL!");
 	lcd.setCursor(0,1);
 	lcd.print("Booting...");
+	// As if we have anything to do here...  ;-)
 	delay(1000);
 	lcd.clear();
 	lcd.setCursor(0,0);
@@ -50,16 +45,21 @@ void setup()
  */
 int key_read1 = -1;
 int key_read2 = -1;
+// the key can be held don't register this.
 int pressed_key = -1;
 
 /*
  * This function could be cleaned up quite a bit but it works.
+ *
+ * Return the key pressed
+ *     [0-9, 10, 11] = [0-9, *, #]
+ * or -1 if no key has been pressed.
  */
 int read_keypad()
 {
 	int key;
 	float key_value;
-	key_value = analogRead(keypad_in);
+	key_value = analogRead(keypad_in_pin);
 
 	if (key_value < 965) {
 		if (pressed_key >= 0)
@@ -141,10 +141,8 @@ void loop()
 	if (key >= 0) {
 		if (key == 10) {
 			Serial.print("*");
-			lcd.print("*");
 		} else if (key == 11) {
 			Serial.print("#");
-			lcd.print("#");
 		} else {
 			Serial.print(key);
 			enter_time(key);
