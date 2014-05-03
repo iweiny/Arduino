@@ -5,9 +5,8 @@
 #include <Time.h>
 #include <LiquidCrystal.h>
 
-// 1 Analog Pin to read the keypad
-int keypad_in_pin = 0;
-
+// Analog Pins
+int keypad_in_pin     = 0;
 
 // rs (LCD pin 4) to Arduino pin 12
 // rw (LCD pin 5) to Arduino pin 11
@@ -17,6 +16,9 @@ int keypad_in_pin = 0;
 LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
 
 int lcd_back_light_pin = 7;
+int cancel_button     = 8;
+int start_stop_button = 9;
+
 
 time_t prev_time;
 void checkBackLight()
@@ -137,6 +139,35 @@ int read_keypad()
 	return -1;
 }
 
+
+#define NO_BUTTON      0
+#define START_BUTTON   1
+#define CANCEL_BUTTON  2
+
+int but_held = 0;
+int read_buttons(void)
+{
+	int st_but = digitalRead(start_stop_button);
+	int can_but = digitalRead(cancel_button);
+
+	if (st_but == HIGH) {
+		if (but_held) {
+			return NO_BUTTON;
+		}
+		but_held = 1;
+		return START_BUTTON;
+	} else if (can_but == HIGH) {
+		if (but_held) {
+			return NO_BUTTON;
+		}
+		but_held = 1;
+		return CANCEL_BUTTON;
+	} else {
+		but_held = 0;
+	}
+	return NO_BUTTON;
+}
+
 int cursor_pos = 0;
 void enter_time(int key)
 {
@@ -146,18 +177,36 @@ void enter_time(int key)
 	cursor_pos++;
 }
 
+void start_timer(void)
+{
+}
+
 void loop()
 {
 	int key = read_keypad();
 	if (key >= 0) {
 		digitalWrite(lcd_back_light_pin, HIGH);
 		if (key == 10) {
-			Serial.print("*");
+			Serial.println("keyboard *");
 		} else if (key == 11) {
-			Serial.print("#");
+			Serial.println("keyboard #");
 		} else {
-			Serial.print(key);
+			Serial.print("keyboard ");
+			Serial.println(key);
 			enter_time(key);
+		}
+	}
+	int button = read_buttons();
+	if (button != NO_BUTTON) {
+		digitalWrite(lcd_back_light_pin, HIGH);
+		switch (button) {
+			case START_BUTTON:
+				Serial.println("start...");
+				start_timer();
+				break;
+			case CANCEL_BUTTON:
+				Serial.println("cancel...");
+				break;
 		}
 	}
 	checkBackLight();
