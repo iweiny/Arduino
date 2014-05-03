@@ -15,9 +15,10 @@ int keypad_in_pin     = 0;
 // LCD pins d4, d5, d6, d7 to Arduino pins 5, 4, 3, 2
 LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
 
+int buzzer             = 6;
 int lcd_back_light_pin = 7;
-int cancel_button     = 8;
-int start_stop_button = 9;
+int cancel_button      = 8;
+int start_stop_button  = 9;
 
 
 time_t prev_time;
@@ -37,6 +38,7 @@ void setup()
 
 	pinMode(lcd_back_light_pin, OUTPUT);
 	digitalWrite(lcd_back_light_pin, HIGH);
+	pinMode(buzzer, OUTPUT);
 	lcd.begin(16,2);
 	lcd.clear();
 	lcd.setCursor(0,0);
@@ -177,8 +179,23 @@ void enter_time(int key)
 	cursor_pos++;
 }
 
+/*
+ * Sound a C note for ~ .5 seconds
+ */
+void sound_buzzer(void)
+{
+	int i;
+	for (i = 0; i < 125; i++) {
+		digitalWrite(buzzer, LOW);
+		delayMicroseconds(1912);
+		digitalWrite(buzzer, HIGH);
+		delayMicroseconds(1912);
+	}
+}
+
 void start_timer(void)
 {
+	sound_buzzer();
 }
 
 void loop()
