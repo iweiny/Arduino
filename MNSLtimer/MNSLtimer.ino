@@ -2,6 +2,7 @@
  * MNSL timer project
  */
 
+#include <Time.h>
 #include <LiquidCrystal.h>
 
 // 1 Analog Pin to read the keypad
@@ -15,8 +16,17 @@ int keypad_in_pin = 0;
 // LCD pins d4, d5, d6, d7 to Arduino pins 5, 4, 3, 2
 LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
 
-int lcd_back_light_pin = 13;
+int lcd_back_light_pin = 7;
 
+time_t prev_time;
+void checkBackLight()
+{
+	time_t cur_time = now();
+	if (cur_time - prev_time > 5) {
+		digitalWrite(lcd_back_light_pin, LOW);
+		prev_time = cur_time;
+	}
+}
 
 void setup()
 {
@@ -38,6 +48,7 @@ void setup()
 	lcd.print("Time: ");
 	lcd.setCursor(0,1);
 	lcd.print("Count: 0");
+	prev_time = now();
 }
 
 /*
@@ -139,6 +150,7 @@ void loop()
 {
 	int key = read_keypad();
 	if (key >= 0) {
+		digitalWrite(lcd_back_light_pin, HIGH);
 		if (key == 10) {
 			Serial.print("*");
 		} else if (key == 11) {
@@ -148,5 +160,5 @@ void loop()
 			enter_time(key);
 		}
 	}
+	checkBackLight();
 }
-
