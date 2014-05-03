@@ -21,38 +21,25 @@ int cancel_button      = 8;
 int start_stop_button  = 9;
 
 
-time_t prev_time;
+/**
+ * Gobals for clock
+ */
+#define STOPPED  0
+#define RUNNING  1
+int clock_mode = 0;
+int countdown_time = 0;
+int entered_time = 0;
+int string_count = 0;
+int last_string_time = 0;
+
+time_t backlight_on_at;
 void checkBackLight()
 {
 	time_t cur_time = now();
-	if (cur_time - prev_time > 5) {
+	if (cur_time - backlight_on_at > 5 && clock_mode != RUNNING) {
 		digitalWrite(lcd_back_light_pin, LOW);
-		prev_time = cur_time;
+		backlight_on_at = cur_time;
 	}
-}
-
-void setup()
-{
-	// Open serial communications and wait for port to open:
-	Serial.begin(9600);
-
-	pinMode(lcd_back_light_pin, OUTPUT);
-	digitalWrite(lcd_back_light_pin, HIGH);
-	pinMode(buzzer, OUTPUT);
-	lcd.begin(16,2);
-	lcd.clear();
-	lcd.setCursor(0,0);
-	lcd.print("Welcome MSNL!");
-	lcd.setCursor(0,1);
-	lcd.print("Booting...");
-	// As if we have anything to do here...  ;-)
-	delay(1000);
-	lcd.clear();
-	lcd.setCursor(0,0);
-	lcd.print("Time: ");
-	lcd.setCursor(0,1);
-	lcd.print("Count: 0");
-	prev_time = now();
 }
 
 /*
@@ -170,13 +157,44 @@ int read_buttons(void)
 	return NO_BUTTON;
 }
 
-int cursor_pos = 0;
+void display_entered_time (void)
+{
+	lcd.setCursor(12,0);
+	if (entered_time < 10) {
+		lcd.print(0);
+	}
+	lcd.print(entered_time);
+}
+
+void display_countdown_time (void)
+{
+	lcd.setCursor(7,0);
+	if (countdown_time < 10) {
+		lcd.print(0);
+	}
+	lcd.print(countdown_time);
+}
+
+void display_string_count(void)
+{
+	lcd.setCursor(8, 1);
+	if (string_count > 10) {
+		string_count = string_count % 10;
+	}
+	lcd.print(string_count);
+	lcd.setCursor(12, 1);
+	if (entered_time < 10) {
+		lcd.print(0);
+	}
+	lcd.print(entered_time);
+}
+
 void enter_time(int key)
 {
-	int pos = (cursor_pos & 0x1) + 6;
-	lcd.setCursor(pos,0);
-	lcd.print(key);
-	cursor_pos++;
+	entered_time = entered_time % 10;
+	entered_time *= 10;
+	entered_time += key;
+	display_entered_time();
 }
 
 /*
@@ -193,9 +211,91 @@ void sound_buzzer(void)
 	}
 }
 
+void timer_func(void)
+{
+	if (clock_mode == STOPPED) {
+		return;
+	}
+	countdown_time--;
+	display_countdown_time();
+	if (countdown_time <= 0) {
+		sound_buzzer();
+		clock_mode = STOPPED;
+	}
+}
+
 void start_timer(void)
 {
+	if (entered_time <= 0) {
+		return;
+	}
+	if (last_string_time && last_string_time == entered_time) {
+		string_count++;
+	} else {
+		last_string_time = entered_time;
+		string_count = 1;
+	}
+	display_string_count();
+	countdown_time = entered_time;
+	display_countdown_time();
+	clock_mode = RUNNING;
+}
+
+void stop_timer(void)
+{
+	countdown_time = 0;
+	display_countdown_time();
+	clock_mode = STOPPED;
+}
+
+void do_start_button(void)
+{
 	sound_buzzer();
+	if (clock_mode == STOPPED) {
+		start_timer();
+	} else {
+		stop_timer();
+	}
+}
+
+void do_cancel_button(void)
+{
+	stop_timer();
+}
+
+time_t prev_time;
+void checkTime(void)
+{
+	time_t cur_time = now();
+	if (cur_time > prev_time) {
+		timer_func();
+		prev_time = cur_time;
+	}
+}
+
+void setup()
+{
+	// Open serial communications and wait for port to open:
+	Serial.begin(9600);
+
+	pinMode(lcd_back_light_pin, OUTPUT);
+	digitalWrite(lcd_back_light_pin, HIGH);
+	pinMode(buzzer, OUTPUT);
+	lcd.begin(16,2);
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("Welcome MSNL!");
+	lcd.setCursor(0,1);
+	lcd.print("Booting...");
+	// As if we have anything to do here...  ;-)
+	delay(1000);
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("Time:  00 / 00 s");
+	lcd.setCursor(0,1);
+	lcd.print("Count:  0 @ 00 s");
+	backlight_on_at = now();
+	prev_time = now();
 }
 
 void loop()
@@ -219,12 +319,14 @@ void loop()
 		switch (button) {
 			case START_BUTTON:
 				Serial.println("start...");
-				start_timer();
+				do_start_button();
 				break;
 			case CANCEL_BUTTON:
 				Serial.println("cancel...");
+				do_cancel_button();
 				break;
 		}
 	}
 	checkBackLight();
+	checkTime();
 }
