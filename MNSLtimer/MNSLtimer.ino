@@ -327,6 +327,6 @@ void loop()
 				break;
 		}
 	}
-	checkBackLight();
+	//checkBackLight();
 	checkTime();
 }
