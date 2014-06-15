@@ -298,7 +298,7 @@ void setup()
 	prev_time = now();
 }
 
-void loop()
+void process_keypad()
 {
 	int key = read_keypad();
 	if (key >= 0) {
@@ -313,6 +313,10 @@ void loop()
 			enter_time(key);
 		}
 	}
+}
+
+void process_buttons()
+{
 	int button = read_buttons();
 	if (button != NO_BUTTON) {
 		digitalWrite(lcd_back_light_pin, HIGH);
@@ -327,6 +331,12 @@ void loop()
 				break;
 		}
 	}
+}
+
+void loop()
+{
+	process_keypad();
+	process_buttons();
 	//check_back_light();
 	check_time();
 }
