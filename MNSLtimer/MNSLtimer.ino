@@ -210,15 +210,8 @@ void refresh_display(void)
 /** =========================================================================
  * Main setup and event processing
  */
-void setup()
+void splash_screen()
 {
-	// Open serial communications and wait for port to open:
-	setup_print(9600);
-
-	init_backlight();
-	backlight_on();
-
-	pinMode(buzzer, OUTPUT);
 	lcd.begin(16,2);
 	lcd.clear();
 	lcd.setCursor(0,0);
@@ -228,6 +221,19 @@ void setup()
 
 	// As if we have anything to do here...  ;-)
 	delay(1000);
+}
+
+void setup()
+{
+	// Open serial communications and wait for port to open:
+	setup_print(9600);
+
+	init_backlight();
+	backlight_on();
+
+	pinMode(buzzer, OUTPUT);
+
+	splash_screen();
 
 	timer_mode = TM_GENERAL_TIMER;
 	gt_init(&lcd);
