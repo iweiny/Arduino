@@ -5,10 +5,9 @@
 #include <Time.h>
 #include <LiquidCrystal.h>
 
-#define SERIAL_DEBUG 1
-#include "serial_debug.h"
-
+#include "MNSLtimer.h"
 #include "mnsl_clock.h"
+#include "gen_timer.h"
 
 // Analog Pins
 int keypad_in_pin     = 0;
@@ -30,9 +29,10 @@ int start_stop_button  = 9;
 /**
  * Gobals
  */
-int entered_time = 0;
-int string_count = 0;
-int last_string_time = 0;
+#define TM_MENU           0
+#define TM_GENERAL_TIMER  1
+#define TM_SEQUENCE_TIMER 2
+int timer_mode = TM_GENERAL_TIMER;
 
 /** =========================================================================
  * Process the backlight functionality
@@ -153,10 +153,6 @@ int read_keypad()
 /** =========================================================================
  * Read the buttons presses which we have
  */
-#define NO_BUTTON      0
-#define START_BUTTON   1
-#define CANCEL_BUTTON  2
-
 int but_held = 0;
 int read_buttons(void)
 {
@@ -196,90 +192,19 @@ void sound_buzzer(void)
 	}
 }
 
-/** =========================================================================
- * Display functions for General timer
- */
-void display_entered_time (void)
-{
-	lcd.setCursor(12,0);
-	if (entered_time < 10) {
-		lcd.print(0);
-	}
-	lcd.print(entered_time);
-}
-
-void display_clock_time (void)
-{
-	unsigned time = mnsl_clock_get_time();
-	lcd.setCursor(7,0);
-	if (time < 10) {
-		lcd.print(0);
-	}
-	lcd.print(time);
-}
-
-void display_string_count(void)
-{
-	lcd.setCursor(8, 1);
-	if (string_count > 10) {
-		string_count = string_count % 10;
-	}
-	lcd.print(string_count);
-	lcd.setCursor(12, 1);
-	if (entered_time < 10) {
-		lcd.print(0);
-	}
-	lcd.print(entered_time);
-}
 
 /** =========================================================================
- * process input for the general timer module
+ * refresh display based on timer mode
  */
-void enter_time(int key)
+void refresh_display(void)
 {
-	if (mnsl_clock_is_running())
-		return;
-
-	entered_time = entered_time % 10;
-	entered_time *= 10;
-	entered_time += key;
-	display_entered_time();
-}
-
-void start_timer(void)
-{
-	if (entered_time <= 0) {
-		return;
+	switch (timer_mode) {
+		case TM_GENERAL_TIMER:
+			gt_refresh_display();
+			break;
+		default:
+			break;
 	}
-	if (last_string_time && last_string_time == entered_time) {
-		string_count++;
-	} else {
-		last_string_time = entered_time;
-		string_count = 1;
-	}
-	display_string_count();
-	display_clock_time();
-	mnsl_clock_start(entered_time);
-}
-
-void stop_timer(void)
-{
-	display_clock_time();
-	mnsl_clock_stop();
-}
-
-void do_start_button(void)
-{
-	sound_buzzer();
-	if (mnsl_clock_is_running())
-		stop_timer();
-	else
-		start_timer();
-}
-
-void do_cancel_button(void)
-{
-	stop_timer();
 }
 
 /** =========================================================================
@@ -300,13 +225,13 @@ void setup()
 	lcd.print("Welcome MSNL!");
 	lcd.setCursor(0,1);
 	lcd.print("Booting...");
+
 	// As if we have anything to do here...  ;-)
 	delay(1000);
-	lcd.clear();
-	lcd.setCursor(0,0);
-	lcd.print("Time:  00 / 00 s");
-	lcd.setCursor(0,1);
-	lcd.print("Count:  0 @ 00 s");
+
+	timer_mode = TM_GENERAL_TIMER;
+	gt_init(&lcd);
+
 	mnsl_clock_init();
 }
 
@@ -315,14 +240,12 @@ void process_keypad()
 	int key = read_keypad();
 	if (key >= 0) {
 		backlight_on();
-		if (key == 10) {
-			serial_println("keyboard *");
-		} else if (key == 11) {
-			serial_println("keyboard #");
-		} else {
-			serial_print("keyboard ");
-			serial_println(key);
-			enter_time(key);
+		switch (timer_mode) {
+			case TM_GENERAL_TIMER:
+				gt_process_keypad(key);
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -332,14 +255,11 @@ void process_buttons()
 	int button = read_buttons();
 	if (button != NO_BUTTON) {
 		backlight_on();
-		switch (button) {
-			case START_BUTTON:
-				serial_println("start button pressed...");
-				do_start_button();
+		switch (timer_mode) {
+			case TM_GENERAL_TIMER:
+				gt_process_button(button);
 				break;
-			case CANCEL_BUTTON:
-				serial_println("cancel button pressed...");
-				do_cancel_button();
+			default:
 				break;
 		}
 	}
@@ -354,5 +274,5 @@ void loop()
 		sound_buzzer();
 		mnsl_clock_stop();
 	}
-	display_clock_time();
+	refresh_display();
 }

@@ -6,6 +6,10 @@
 #ifndef __SERIAL_DEBUG_H__
 #define __SERIAL_DEBUG_H__
 
+#include <HardwareSerial.h>
+
+extern HardwareSerial Serial;
+
 #ifdef SERIAL_DEBUG
 	#define setup_print(baud) \
 		Serial.begin(baud)
