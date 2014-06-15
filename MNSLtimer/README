@@ -22,3 +22,26 @@ The project is split into 3 main components.
 	3) program mode logic
 
 
+
+Design/Implementation Details:
+
+There are 2 state machines within the timer.
+
+	1) the clock (timer)
+	2) the mode state machine
+
+Clock state machine:
+
+	+---------+                         +---------+
+	| STOPPED | --- "start (buzz)" ---> | RUNNING |
+	+---------+                         +---------+
+             ^                                |
+	     |                                |
+	     |                                |
+	      \--- "start (buzz)" ------------/
+               \                             /
+	        \--- "stop button" ---------/
+
+
+Mode state machine.
+
