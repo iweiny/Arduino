@@ -37,14 +37,27 @@ int last_string_time = 0;
 /** =========================================================================
  * Process the backlight functionality
  */
+void backlight_off()
+{
+	digitalWrite(lcd_back_light_pin, LOW);
+}
+void backlight_on()
+{
+	digitalWrite(lcd_back_light_pin, HIGH);
+}
 time_t backlight_on_at;
-void check_back_light()
+void timeout_backlight()
 {
 	time_t cur_time = now();
 	if (cur_time - backlight_on_at > 5 && !mnsl_clock_is_running()) {
-		digitalWrite(lcd_back_light_pin, LOW);
+		backlight_off();
 		backlight_on_at = cur_time;
 	}
+}
+void init_backlight()
+{
+	pinMode(lcd_back_light_pin, OUTPUT);
+	backlight_on_at = now();
 }
 
 /** =========================================================================
@@ -277,8 +290,9 @@ void setup()
 	// Open serial communications and wait for port to open:
 	setup_print(9600);
 
-	pinMode(lcd_back_light_pin, OUTPUT);
-	digitalWrite(lcd_back_light_pin, HIGH);
+	init_backlight();
+	backlight_on();
+
 	pinMode(buzzer, OUTPUT);
 	lcd.begin(16,2);
 	lcd.clear();
@@ -293,7 +307,6 @@ void setup()
 	lcd.print("Time:  00 / 00 s");
 	lcd.setCursor(0,1);
 	lcd.print("Count:  0 @ 00 s");
-	backlight_on_at = now();
 	mnsl_clock_init();
 }
 
@@ -301,7 +314,7 @@ void process_keypad()
 {
 	int key = read_keypad();
 	if (key >= 0) {
-		digitalWrite(lcd_back_light_pin, HIGH);
+		backlight_on();
 		if (key == 10) {
 			serial_println("keyboard *");
 		} else if (key == 11) {
@@ -318,7 +331,7 @@ void process_buttons()
 {
 	int button = read_buttons();
 	if (button != NO_BUTTON) {
-		digitalWrite(lcd_back_light_pin, HIGH);
+		backlight_on();
 		switch (button) {
 			case START_BUTTON:
 				serial_println("start button pressed...");
@@ -336,7 +349,7 @@ void loop()
 {
 	process_keypad();
 	process_buttons();
-	//check_back_light();
+	//timeout_backlight();
 	if (mnsl_clock_run() == CLOCK_EXPIRED) {
 		sound_buzzer();
 		mnsl_clock_stop();
