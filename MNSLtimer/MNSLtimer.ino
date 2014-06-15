@@ -5,6 +5,9 @@
 #include <Time.h>
 #include <LiquidCrystal.h>
 
+#define SERIAL_DEBUG 1
+#include "serial_debug.h"
+
 // Analog Pins
 int keypad_in_pin     = 0;
 
@@ -69,45 +72,45 @@ int read_keypad()
 
 		if (930 < key_value && key_value < 950) {
 			key = 3;
-			//Serial.print("   3");
+			serial_print("   3");
 		} else if (850 < key_value && key_value < 870) {
 			key = 6;
-			//Serial.print("   6");
+			serial_print("   6");
 		} else if (775 < key_value && key_value < 795) {
 			key = 9;
-			//Serial.print("   9");
+			serial_print("   9");
 		} else if (690 < key_value && key_value < 730) {
 			key = 11;
-			//Serial.print("   #");
+			serial_print("   #");
 		} else if (610 < key_value && key_value < 650) {
 			key = 2;
-			//Serial.print("   2");
+			serial_print("   2");
 		} else if (540 < key_value && key_value < 580) {
 			key = 5;
-			//Serial.print("   5");
+			serial_print("   5");
 		} else if (455 < key_value && key_value < 495) {
 			key = 8;
-			//Serial.print("   8");
+			serial_print("   8");
 		} else if (375 < key_value && key_value < 415) {
 			key = 0;
-			//Serial.print("   0");
+			serial_print("   0");
 		} else if (285 < key_value && key_value < 325) {
 			key = 1;
-			//Serial.print("   1");
+			serial_print("   1");
 		} else if (190 < key_value && key_value < 230) {
 			key = 4;
-			//Serial.print("   4");
+			serial_print("   4");
 		} else if ( 90 < key_value && key_value <  130) {
 			key = 7;
-			//Serial.print("   7");
+			serial_print("   7");
 		} else if ( 0 <= key_value && key_value <  30) {
 			key = 10;
-			//Serial.print("   *");
+			serial_print("   *");
 		}
 
-		//Serial.print("   (");
-		//Serial.print(key_value);
-		//Serial.print(")\n");
+		serial_print("   (");
+		serial_print(key_value);
+		serial_print(")\n");
 
 		if (key_read1 == -1) {
 			key_read1 = key;
@@ -276,7 +279,7 @@ void check_time(void)
 void setup()
 {
 	// Open serial communications and wait for port to open:
-	Serial.begin(9600);
+	setup_print(9600);
 
 	pinMode(lcd_back_light_pin, OUTPUT);
 	digitalWrite(lcd_back_light_pin, HIGH);
@@ -304,12 +307,12 @@ void process_keypad()
 	if (key >= 0) {
 		digitalWrite(lcd_back_light_pin, HIGH);
 		if (key == 10) {
-			Serial.println("keyboard *");
+			serial_println("keyboard *");
 		} else if (key == 11) {
-			Serial.println("keyboard #");
+			serial_println("keyboard #");
 		} else {
-			Serial.print("keyboard ");
-			Serial.println(key);
+			serial_print("keyboard ");
+			serial_println(key);
 			enter_time(key);
 		}
 	}
@@ -322,11 +325,11 @@ void process_buttons()
 		digitalWrite(lcd_back_light_pin, HIGH);
 		switch (button) {
 			case START_BUTTON:
-				Serial.println("start...");
+				serial_println("start button pressed...");
 				do_start_button();
 				break;
 			case CANCEL_BUTTON:
-				Serial.println("cancel...");
+				serial_println("cancel button pressed...");
 				do_cancel_button();
 				break;
 		}
