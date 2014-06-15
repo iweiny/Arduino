@@ -20,6 +20,7 @@ int keypad_in_pin     = 0;
 // LCD pins d4, d5, d6, d7 to Arduino pins 5, 4, 3, 2
 LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
 
+// Pin definitions
 int buzzer             = 6;
 int lcd_back_light_pin = 7;
 int cancel_button      = 8;
@@ -33,6 +34,9 @@ int entered_time = 0;
 int string_count = 0;
 int last_string_time = 0;
 
+/** =========================================================================
+ * Process the backlight functionality
+ */
 time_t backlight_on_at;
 void check_back_light()
 {
@@ -43,6 +47,9 @@ void check_back_light()
 	}
 }
 
+/** =========================================================================
+ * Read Keypad
+ */
 /*
  * Each value must be repeated for 3 cycles to be registered as "good"
  */
@@ -130,6 +137,9 @@ int read_keypad()
 }
 
 
+/** =========================================================================
+ * Read the buttons presses which we have
+ */
 #define NO_BUTTON      0
 #define START_BUTTON   1
 #define CANCEL_BUTTON  2
@@ -158,6 +168,24 @@ int read_buttons(void)
 	return NO_BUTTON;
 }
 
+/** =========================================================================
+ * General buzzer function for the temporary buzzer we have wired up.
+ * Sound a C note for ~ .5 seconds
+ */
+void sound_buzzer(void)
+{
+	int i;
+	for (i = 0; i < 125; i++) {
+		digitalWrite(buzzer, LOW);
+		delayMicroseconds(1912);
+		digitalWrite(buzzer, HIGH);
+		delayMicroseconds(1912);
+	}
+}
+
+/** =========================================================================
+ * Display functions for General timer
+ */
 void display_entered_time (void)
 {
 	lcd.setCursor(12,0);
@@ -191,6 +219,9 @@ void display_string_count(void)
 	lcd.print(entered_time);
 }
 
+/** =========================================================================
+ * process input for the general timer module
+ */
 void enter_time(int key)
 {
 	if (mnsl_clock_is_running())
@@ -200,20 +231,6 @@ void enter_time(int key)
 	entered_time *= 10;
 	entered_time += key;
 	display_entered_time();
-}
-
-/*
- * Sound a C note for ~ .5 seconds
- */
-void sound_buzzer(void)
-{
-	int i;
-	for (i = 0; i < 125; i++) {
-		digitalWrite(buzzer, LOW);
-		delayMicroseconds(1912);
-		digitalWrite(buzzer, HIGH);
-		delayMicroseconds(1912);
-	}
 }
 
 void start_timer(void)
@@ -252,6 +269,9 @@ void do_cancel_button(void)
 	stop_timer();
 }
 
+/** =========================================================================
+ * Main setup and event processing
+ */
 void setup()
 {
 	// Open serial communications and wait for port to open:
