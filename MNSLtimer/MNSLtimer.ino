@@ -27,7 +27,7 @@ int start_stop_button  = 9;
 
 
 /**
- * Gobals for clock
+ * Gobals
  */
 int entered_time = 0;
 int string_count = 0;
