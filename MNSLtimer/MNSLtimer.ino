@@ -192,8 +192,16 @@ void display_string_count(void)
 	lcd.print(entered_time);
 }
 
+int clock_is_running()
+{
+	return (clock_mode == RUNNING);
+}
+
 void enter_time(int key)
 {
+	if (clock_is_running())
+		return;
+
 	entered_time = entered_time % 10;
 	entered_time *= 10;
 	entered_time += key;
