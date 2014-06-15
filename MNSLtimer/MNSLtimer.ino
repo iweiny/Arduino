@@ -7,6 +7,7 @@
 
 #include "MNSLtimer.h"
 #include "mnsl_clock.h"
+#include "menu.h"
 #include "gen_timer.h"
 
 // Analog Pins
@@ -33,6 +34,7 @@ int start_stop_button  = 9;
 #define TM_GENERAL_TIMER  1
 #define TM_SEQUENCE_TIMER 2
 int timer_mode = TM_GENERAL_TIMER;
+int old_timer_mode = timer_mode;
 
 /** =========================================================================
  * Process the backlight functionality
@@ -192,19 +194,67 @@ void sound_buzzer(void)
 	}
 }
 
-
 /** =========================================================================
  * refresh display based on timer mode
  */
 void refresh_display(void)
 {
 	switch (timer_mode) {
+		case TM_MENU:
+			menu_refresh_display();
+			break;
 		case TM_GENERAL_TIMER:
 			gt_refresh_display();
 			break;
 		default:
 			break;
 	}
+}
+
+/** =========================================================================
+ * refresh display based on timer mode
+ */
+void show_display(void)
+{
+	switch (timer_mode) {
+		case TM_MENU:
+			menu_show_display();
+			break;
+		case TM_GENERAL_TIMER:
+			gt_show_display();
+			break;
+		default:
+			break;
+	}
+}
+
+/** =========================================================================
+ * Set mode callback called by menu module when the user selects a mode.
+ */
+void setmode(int mode)
+{
+	switch (mode) {
+		case MENU_CANCEL:
+			timer_mode = old_timer_mode;
+			break;
+		case MENU_GENERAL_TIMER:
+			timer_mode = TM_GENERAL_TIMER;
+			break;
+		case MENU_SEQ_PPC_7:
+			break;
+		case MENU_SEQ_PPC_25:
+			break;
+		case MENU_SEQ_TYRO:
+			break;
+	}
+
+	serial_print("new mode selected ");
+	serial_println(timer_mode);
+
+// hard code this for now since we don't support any other mode
+timer_mode = TM_GENERAL_TIMER;
+
+	show_display();
 }
 
 /** =========================================================================
@@ -235,10 +285,12 @@ void setup()
 
 	splash_screen();
 
-	timer_mode = TM_GENERAL_TIMER;
-	gt_init(&lcd);
-
 	mnsl_clock_init();
+	gt_init(&lcd);
+	menu_init(&lcd, MENU_GENERAL_TIMER, setmode);
+
+	timer_mode = TM_GENERAL_TIMER;
+	gt_show_display();
 }
 
 void process_keypad()
@@ -246,7 +298,17 @@ void process_keypad()
 	int key = read_keypad();
 	if (key >= 0) {
 		backlight_on();
+		if (key == KEYPAD_STAR && !mnsl_clock_is_running()) {
+			if (timer_mode != TM_MENU)
+				old_timer_mode = timer_mode;
+			timer_mode = TM_MENU;
+			show_display();
+			return;
+		}
 		switch (timer_mode) {
+			case TM_MENU:
+				menu_process_keypad(key);
+				break;
 			case TM_GENERAL_TIMER:
 				gt_process_keypad(key);
 				break;
@@ -262,6 +324,9 @@ void process_buttons()
 	if (button != NO_BUTTON) {
 		backlight_on();
 		switch (timer_mode) {
+			case TM_MENU:
+				menu_process_button(button);
+				break;
 			case TM_GENERAL_TIMER:
 				gt_process_button(button);
 				break;
