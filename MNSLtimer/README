@@ -1,0 +1,24 @@
+This Arduino project implements a timer for the Monday Night Shooting league.
+
+The timer is a simple clock with LCD and keypad which allows for 2 Modes:
+
+	1) simple timer
+	2) program mode
+
+1) Simple Timer allows the user to enter a time and the timer will count down
+   from that time and signal a buzzer at the start and stop of the time.
+
+2) program mode allows the user to select from a series of sequenced times.
+   Each press of the start button will start the time for the next time in the
+   sequence.  Either the expiration of the time or a stop signal will cause the
+   timer to move to the next sequence.  The Timer displays the time countdown
+   and the sequence string for each sequence.
+
+
+The project is split into 3 main components.
+
+	1) main hardware driving code (keypad processing, buttons, and LCD)
+	2) simple timer logic
+	3) program mode logic
+
+
