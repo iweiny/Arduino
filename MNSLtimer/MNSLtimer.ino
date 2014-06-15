@@ -33,7 +33,7 @@ int string_count = 0;
 int last_string_time = 0;
 
 time_t backlight_on_at;
-void checkBackLight()
+void check_back_light()
 {
 	time_t cur_time = now();
 	if (cur_time - backlight_on_at > 5 && clock_mode != RUNNING) {
@@ -264,7 +264,7 @@ void do_cancel_button(void)
 }
 
 time_t prev_time;
-void checkTime(void)
+void check_time(void)
 {
 	time_t cur_time = now();
 	if (cur_time > prev_time) {
@@ -327,6 +327,6 @@ void loop()
 				break;
 		}
 	}
-	//checkBackLight();
-	checkTime();
+	//check_back_light();
+	check_time();
 }
