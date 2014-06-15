@@ -8,6 +8,8 @@
 #define SERIAL_DEBUG 1
 #include "serial_debug.h"
 
+#include "mnsl_clock.h"
+
 // Analog Pins
 int keypad_in_pin     = 0;
 
@@ -27,10 +29,6 @@ int start_stop_button  = 9;
 /**
  * Gobals for clock
  */
-#define STOPPED  0
-#define RUNNING  1
-int clock_mode = 0;
-int countdown_time = 0;
 int entered_time = 0;
 int string_count = 0;
 int last_string_time = 0;
@@ -39,7 +37,7 @@ time_t backlight_on_at;
 void check_back_light()
 {
 	time_t cur_time = now();
-	if (cur_time - backlight_on_at > 5 && clock_mode != RUNNING) {
+	if (cur_time - backlight_on_at > 5 && !mnsl_clock_is_running()) {
 		digitalWrite(lcd_back_light_pin, LOW);
 		backlight_on_at = cur_time;
 	}
@@ -169,13 +167,14 @@ void display_entered_time (void)
 	lcd.print(entered_time);
 }
 
-void display_countdown_time (void)
+void display_clock_time (void)
 {
+	unsigned time = mnsl_clock_get_time();
 	lcd.setCursor(7,0);
-	if (countdown_time < 10) {
+	if (time < 10) {
 		lcd.print(0);
 	}
-	lcd.print(countdown_time);
+	lcd.print(time);
 }
 
 void display_string_count(void)
@@ -192,14 +191,9 @@ void display_string_count(void)
 	lcd.print(entered_time);
 }
 
-int clock_is_running()
-{
-	return (clock_mode == RUNNING);
-}
-
 void enter_time(int key)
 {
-	if (clock_is_running())
+	if (mnsl_clock_is_running())
 		return;
 
 	entered_time = entered_time % 10;
@@ -222,19 +216,6 @@ void sound_buzzer(void)
 	}
 }
 
-void timer_func(void)
-{
-	if (clock_mode == STOPPED) {
-		return;
-	}
-	countdown_time--;
-	display_countdown_time();
-	if (countdown_time <= 0) {
-		sound_buzzer();
-		clock_mode = STOPPED;
-	}
-}
-
 void start_timer(void)
 {
 	if (entered_time <= 0) {
@@ -247,41 +228,28 @@ void start_timer(void)
 		string_count = 1;
 	}
 	display_string_count();
-	countdown_time = entered_time;
-	display_countdown_time();
-	clock_mode = RUNNING;
+	display_clock_time();
+	mnsl_clock_start(entered_time);
 }
 
 void stop_timer(void)
 {
-	countdown_time = 0;
-	display_countdown_time();
-	clock_mode = STOPPED;
+	display_clock_time();
+	mnsl_clock_stop();
 }
 
 void do_start_button(void)
 {
 	sound_buzzer();
-	if (clock_mode == STOPPED) {
-		start_timer();
-	} else {
+	if (mnsl_clock_is_running())
 		stop_timer();
-	}
+	else
+		start_timer();
 }
 
 void do_cancel_button(void)
 {
 	stop_timer();
-}
-
-time_t prev_time;
-void check_time(void)
-{
-	time_t cur_time = now();
-	if (cur_time > prev_time) {
-		timer_func();
-		prev_time = cur_time;
-	}
 }
 
 void setup()
@@ -306,7 +274,7 @@ void setup()
 	lcd.setCursor(0,1);
 	lcd.print("Count:  0 @ 00 s");
 	backlight_on_at = now();
-	prev_time = now();
+	mnsl_clock_init();
 }
 
 void process_keypad()
@@ -349,5 +317,9 @@ void loop()
 	process_keypad();
 	process_buttons();
 	//check_back_light();
-	check_time();
+	if (mnsl_clock_run() == CLOCK_EXPIRED) {
+		sound_buzzer();
+		mnsl_clock_stop();
+	}
+	display_clock_time();
 }
