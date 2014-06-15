@@ -7,10 +7,10 @@
 #include "mnsl_clock.h"
 #include "gen_timer.h"
 
-int entered_time = 0;
-int string_count = 0;
-int last_string_time = 0;
-LiquidCrystal *display = NULL;
+static int entered_time = 0;
+static int string_count = 0;
+static int last_string_time = 0;
+static LiquidCrystal *display = NULL;
 
 /** =========================================================================
  * Display functions for General timer
