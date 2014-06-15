@@ -10,6 +10,7 @@
 void gt_init(LiquidCrystal *lcd);
 void gt_process_button(int button);
 void gt_process_keypad(int key);
+void gt_show_display(void);
 void gt_refresh_display(void);
 
 #endif /* __GEN_TIMER_H__ */

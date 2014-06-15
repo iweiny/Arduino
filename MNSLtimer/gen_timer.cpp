@@ -108,11 +108,6 @@ static void do_cancel_button(void)
 void gt_init(LiquidCrystal *lcd)
 {
 	display = lcd;
-	display->clear();
-	display->setCursor(0,0);
-	display->print("Time:  00 / 00 s");
-	display->setCursor(0,1);
-	display->print("Count:  0 @ 00 s");
 }
 
 void gt_process_button(int button)
@@ -140,6 +135,18 @@ void gt_process_keypad(int key)
 		serial_println(key);
 		enter_time(key);
 	}
+}
+
+void gt_show_display(void)
+{
+	display->clear();
+	display->setCursor(0,0);
+	display->print("Time:  00 / 00 s");
+	display->setCursor(0,1);
+	display->print("Count:  0 @ 00 s");
+	display_entered_time();
+	display_clock_time();
+	display_string_count();
 }
 
 void gt_refresh_display(void)
