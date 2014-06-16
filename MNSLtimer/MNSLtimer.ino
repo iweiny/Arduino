@@ -9,6 +9,7 @@
 #include "mnsl_clock.h"
 #include "menu.h"
 #include "gen_timer.h"
+#include "seq_timer.h"
 
 // Analog Pins
 int keypad_in_pin     = 0;
@@ -206,6 +207,9 @@ void refresh_display(void)
 		case TM_GENERAL_TIMER:
 			gt_refresh_display();
 			break;
+		case TM_SEQUENCE_TIMER:
+			st_refresh_display();
+			break;
 		default:
 			break;
 	}
@@ -222,6 +226,23 @@ void show_display(void)
 			break;
 		case TM_GENERAL_TIMER:
 			gt_show_display();
+			break;
+		case TM_SEQUENCE_TIMER:
+			st_show_display();
+			break;
+		default:
+			break;
+	}
+}
+
+/** =========================================================================
+ * refresh display based on timer mode
+ */
+void clock_expired(void)
+{
+	switch (timer_mode) {
+		case TM_SEQUENCE_TIMER:
+			st_clock_expired();
 			break;
 		default:
 			break;
@@ -241,18 +262,21 @@ void setmode(int mode)
 			timer_mode = TM_GENERAL_TIMER;
 			break;
 		case MENU_SEQ_PPC_7:
+			timer_mode = TM_SEQUENCE_TIMER;
+			st_start_seq(ST_SEQ_PPC_7);
 			break;
 		case MENU_SEQ_PPC_25:
+			timer_mode = TM_SEQUENCE_TIMER;
+			st_start_seq(ST_SEQ_PPC_25);
 			break;
 		case MENU_SEQ_TYRO:
+			timer_mode = TM_SEQUENCE_TIMER;
+			st_start_seq(ST_SEQ_TYRO);
 			break;
 	}
 
 	serial_print("new mode selected ");
 	serial_println(timer_mode);
-
-// hard code this for now since we don't support any other mode
-timer_mode = TM_GENERAL_TIMER;
 
 	show_display();
 }
@@ -291,6 +315,7 @@ void setup()
 
 	timer_mode = TM_GENERAL_TIMER;
 	gt_show_display();
+	st_init(&lcd);
 }
 
 void process_keypad()
@@ -312,6 +337,9 @@ void process_keypad()
 			case TM_GENERAL_TIMER:
 				gt_process_keypad(key);
 				break;
+			case TM_SEQUENCE_TIMER:
+				st_process_keypad(key);
+				break;
 			default:
 				break;
 		}
@@ -330,6 +358,9 @@ void process_buttons()
 			case TM_GENERAL_TIMER:
 				gt_process_button(button);
 				break;
+			case TM_SEQUENCE_TIMER:
+				st_process_button(button);
+				break;
 			default:
 				break;
 		}
@@ -344,6 +375,7 @@ void loop()
 	if (mnsl_clock_run() == CLOCK_EXPIRED) {
 		sound_buzzer();
 		mnsl_clock_stop();
+		clock_expired();
 	}
 	refresh_display();
 }
