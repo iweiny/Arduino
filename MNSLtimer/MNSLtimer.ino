@@ -26,6 +26,8 @@ int buzzer             = 6;
 int lcd_back_light_pin = 7;
 int cancel_button      = 8;
 int start_stop_button  = 9;
+int wl_B_button        = A3;
+int wl_C_button        = A4;
 
 
 /**
@@ -161,6 +163,8 @@ int read_buttons(void)
 {
 	int st_but = digitalRead(start_stop_button);
 	int can_but = digitalRead(cancel_button);
+	int wl_b_but = digitalRead(wl_B_button);
+	int wl_c_but = digitalRead(wl_C_button);
 
 	if (st_but == HIGH) {
 		if (but_held) {
@@ -174,6 +178,18 @@ int read_buttons(void)
 		}
 		but_held = 1;
 		return CANCEL_BUTTON;
+	} else if (wl_b_but == HIGH) {
+		if (but_held) {
+			return NO_BUTTON;
+		}
+		but_held = 1;
+		return WL_B_BUTTON;
+	} else if (wl_c_but == HIGH) {
+		if (but_held) {
+			return NO_BUTTON;
+		}
+		but_held = 1;
+		return WL_C_BUTTON;
 	} else {
 		but_held = 0;
 	}
@@ -301,6 +317,8 @@ void setup()
 {
 	// Open serial communications and wait for port to open:
 	setup_print(9600);
+	pinMode(wl_B_button, INPUT);
+	pinMode(wl_C_button, INPUT);
 
 	init_backlight();
 	backlight_on();
@@ -318,16 +336,21 @@ void setup()
 	st_init(&lcd);
 }
 
+void enter_menu_mode(void)
+{
+	if (timer_mode != TM_MENU)
+		old_timer_mode = timer_mode;
+	timer_mode = TM_MENU;
+	show_display();
+}
+
 void process_keypad()
 {
 	int key = read_keypad();
 	if (key >= 0) {
 		backlight_on();
 		if (key == KEYPAD_STAR && !mnsl_clock_is_running()) {
-			if (timer_mode != TM_MENU)
-				old_timer_mode = timer_mode;
-			timer_mode = TM_MENU;
-			show_display();
+			enter_menu_mode();
 			return;
 		}
 		switch (timer_mode) {
@@ -351,6 +374,10 @@ void process_buttons()
 	int button = read_buttons();
 	if (button != NO_BUTTON) {
 		backlight_on();
+		if (button == WL_C_BUTTON && !mnsl_clock_is_running()) {
+			enter_menu_mode();
+			return;
+		}
 		switch (timer_mode) {
 			case TM_MENU:
 				menu_process_button(button);

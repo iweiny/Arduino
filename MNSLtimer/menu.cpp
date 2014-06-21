@@ -37,11 +37,6 @@ void menu_init(LiquidCrystal *lcd, unsigned start_mode, setmode_cb_t setmode)
 	}
 }
 
-void menu_process_button(int button)
-{
-	/* do nothing */
-}
-
 static void print_mode_str(void)
 {
 	display->setCursor(0,0);
@@ -64,6 +59,23 @@ static void rotate_mode_down(void)
 	if (mode_idx >= NUM_MODES)
 		mode_idx = 0;
 	print_mode_str();
+}
+
+void menu_process_button(int button)
+{
+	switch (button) {
+		case START_BUTTON:
+			setmode_cb(modes[mode_idx].mode_val);
+			break;
+		case WL_B_BUTTON:
+			rotate_mode_up();
+			break;
+		case CANCEL_BUTTON:
+			rotate_mode_down();
+			break;
+		default:
+			break;
+	}
 }
 
 void menu_process_keypad(int key)
