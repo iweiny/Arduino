@@ -185,10 +185,10 @@ static void do_start_button(void)
 void st_process_button(int button)
 {
 	switch (button) {
-		case START_BUTTON:
+		case WL_A_BUTTON:
 			do_start_button();
 			break;
-		case CANCEL_BUTTON:
+		case WL_D_BUTTON:
 			stop_timer();
 			break;
 	}

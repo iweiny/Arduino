@@ -113,11 +113,11 @@ void gt_init(LiquidCrystal *lcd)
 void gt_process_button(int button)
 {
 	switch (button) {
-		case START_BUTTON:
+		case WL_A_BUTTON:
 			serial_println("start button pressed...");
 			do_start_button();
 			break;
-		case CANCEL_BUTTON:
+		case WL_D_BUTTON:
 			serial_println("cancel button pressed...");
 			do_cancel_button();
 			break;

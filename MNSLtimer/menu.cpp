@@ -64,13 +64,13 @@ static void rotate_mode_down(void)
 void menu_process_button(int button)
 {
 	switch (button) {
-		case START_BUTTON:
+		case WL_A_BUTTON:
 			setmode_cb(modes[mode_idx].mode_val);
 			break;
 		case WL_B_BUTTON:
 			rotate_mode_up();
 			break;
-		case CANCEL_BUTTON:
+		case WL_D_BUTTON:
 			rotate_mode_down();
 			break;
 		default:

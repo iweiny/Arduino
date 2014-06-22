@@ -10,10 +10,10 @@
 
 /* Button defines */
 #define NO_BUTTON      0
-#define START_BUTTON   1
-#define CANCEL_BUTTON  2
-#define WL_B_BUTTON    3
-#define WL_C_BUTTON    4
+#define WL_A_BUTTON    1
+#define WL_B_BUTTON    2
+#define WL_C_BUTTON    3
+#define WL_D_BUTTON    4
 
 /* Keypad defines */
 #define KEYPAD_STAR    10

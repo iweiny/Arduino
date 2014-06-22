@@ -24,10 +24,10 @@ LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
 // Pin definitions
 int buzzer             = 6;
 int lcd_back_light_pin = 7;
-int cancel_button      = 8;
-int start_stop_button  = 9;
+int wl_A_button        = 9;
 int wl_B_button        = A3;
 int wl_C_button        = A4;
+int wl_D_button        = 8;
 
 
 /**
@@ -161,23 +161,17 @@ int read_keypad()
 int but_held = 0;
 int read_buttons(void)
 {
-	int st_but = digitalRead(start_stop_button);
-	int can_but = digitalRead(cancel_button);
+	int wl_a_but = digitalRead(wl_A_button);
 	int wl_b_but = digitalRead(wl_B_button);
 	int wl_c_but = digitalRead(wl_C_button);
+	int wl_d_but = digitalRead(wl_D_button);
 
-	if (st_but == HIGH) {
+	if (wl_a_but == HIGH) {
 		if (but_held) {
 			return NO_BUTTON;
 		}
 		but_held = 1;
-		return START_BUTTON;
-	} else if (can_but == HIGH) {
-		if (but_held) {
-			return NO_BUTTON;
-		}
-		but_held = 1;
-		return CANCEL_BUTTON;
+		return WL_A_BUTTON;
 	} else if (wl_b_but == HIGH) {
 		if (but_held) {
 			return NO_BUTTON;
@@ -190,6 +184,12 @@ int read_buttons(void)
 		}
 		but_held = 1;
 		return WL_C_BUTTON;
+	} else if (wl_d_but == HIGH) {
+		if (but_held) {
+			return NO_BUTTON;
+		}
+		but_held = 1;
+		return WL_D_BUTTON;
 	} else {
 		but_held = 0;
 	}
