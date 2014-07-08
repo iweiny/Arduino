@@ -89,7 +89,7 @@ static void stop_timer(void)
  */
 static void do_start_button(void)
 {
-	sound_buzzer();
+	sound_buzzer(500);
 	if (mnsl_clock_is_running())
 		stop_timer();
 	else

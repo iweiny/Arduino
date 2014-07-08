@@ -20,6 +20,6 @@
 #define KEYPAD_POUND   11
 
 /* global functions */
-void sound_buzzer(void);
+void sound_buzzer(int ms);
 
 #endif /* __MNSL_TIMER_H__ */

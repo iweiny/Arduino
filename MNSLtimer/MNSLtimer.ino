@@ -200,7 +200,7 @@ int read_buttons(void)
  * General buzzer function for the temporary buzzer we have wired up.
  * Sound a C note for ~ .5 seconds
  */
-void sound_buzzer(void)
+void sound_c_note(void)
 {
 	int i;
 	for (i = 0; i < 125; i++) {
@@ -209,6 +209,16 @@ void sound_buzzer(void)
 		digitalWrite(buzzer, HIGH);
 		delayMicroseconds(1912);
 	}
+}
+
+/** =========================================================================
+ * Assert the buzzer line to the buzzer box
+ */
+void sound_buzzer(int ms)
+{
+	digitalWrite(buzzer, HIGH);
+	delay(ms);
+	digitalWrite(buzzer, LOW);
 }
 
 /** =========================================================================
@@ -400,7 +410,7 @@ void loop()
 	process_buttons();
 	//timeout_backlight();
 	if (mnsl_clock_run() == CLOCK_EXPIRED) {
-		sound_buzzer();
+		sound_buzzer(2000);
 		mnsl_clock_stop();
 		clock_expired();
 	}
