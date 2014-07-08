@@ -51,7 +51,7 @@ void mnsl_clock_start(int time)
 
 void mnsl_clock_stop(void)
 {
-	countdown_time = 0;
+	//countdown_time = 0;
 	clock_mode = CLOCK_STOPPED;
 }
 
