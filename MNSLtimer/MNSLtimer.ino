@@ -410,7 +410,7 @@ void loop()
 	process_buttons();
 	//timeout_backlight();
 	if (mnsl_clock_run() == CLOCK_EXPIRED) {
-		sound_buzzer(2000);
+		sound_buzzer(1750);
 		mnsl_clock_stop();
 		clock_expired();
 	}
